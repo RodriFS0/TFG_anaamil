@@ -6,11 +6,11 @@ from formula_validation.Formula import Formula
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    # final_data_nt = access_data(training=False)
-    # training_data = access_data(training=True)
-    # final_data_nt.to_csv("../final_data_nt.tsv", sep='\t', index=False)
-    # training_data.to_csv("../final_data.tsv", sep='\t', index=False)
-    final_df = pd.read_csv("../final_data.tsv", sep="\t", header=0, encoding='utf-8')
+    final_data_nt = access_data(training=False)
+    training_data = access_data(training=True)
+    final_data_nt.to_csv("final_data_nt.tsv", sep='\t', index=False)
+    training_data.to_csv("final_data.tsv", sep='\t', index=False)
+    final_df = pd.read_csv("final_data.tsv", sep="\t", header=0, encoding='utf-8')
     for pos, inchi in enumerate(final_df["inchi.std"]):
         try:
             formula = Formula.formula_from_inchi(inchi, None)

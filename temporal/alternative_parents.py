@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 import re
 from glob import glob
@@ -16,16 +18,20 @@ def alternative_parents():
         DataFrame: DataFrame containing the matched records.
     """
     try:
-        directory = glob("data/*/*.tsv")
+        directory = glob("../data/*/*.tsv")
         results = []
         df_list = []
         for files in directory:
             if re.search(r"_rtdata_canonical_success.tsv", files):
                 df_rt = pd.read_csv(files, sep='\t', header=0, encoding='utf-8')
                 results.append(df_rt)
+        print("TSVs encontrados por glob:", len(directory))
+        print("Ejemplo:", directory[:3])
+
+        print("TSVs que matchean el patrón:", len(results))
         if results:
             df_concat = pd.concat(results, axis=0, ignore_index=True)
-            file = open("../../all_classified.tsv", 'r')
+            file = open("sampled_classified.tsv", 'r')
             for i, line in enumerate(file):
                 lines = line.strip("\n").split("\t")
                 df_query = df_concat[df_concat["inchikey.std"].str.contains(lines[0])]
@@ -34,7 +40,13 @@ def alternative_parents():
                     df_at = (pd.DataFrame(lines)).transpose()
                     df_list.append(pd.merge(df_query, df_at, right_on=0, left_on="inchikey.std"))
             df = pd.concat(df_list, ignore_index=True)
-            # df.to_csv("../RepoRT_classified.tsv", sep="\t", index=False)
+            df.to_csv("../RepoRT_classified.tsv", sep="\t", index=False)
+            print("Alternative Parents Proccess finished")
             return df
+
     except Exception as e:
         print(f"Error: {e}")
+
+
+if __name__ == "__main__":
+    alternative_parents()

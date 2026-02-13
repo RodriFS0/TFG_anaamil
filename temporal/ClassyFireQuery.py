@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import pandas as pd
 from glob import glob
 import numpy as np
@@ -39,6 +41,7 @@ def access_data(pattern="", location=".*", training=True):
         results = []
         column = None
         alt = pd.read_csv('RepoRT_classified.tsv', sep='\t', header=0, encoding='utf-8', dtype=object)
+
         for file in directory:
             rt = pd.read_csv(file, sep='\t', header=0, encoding='utf-8')
             if "classyfire.kingdom" in rt.columns and not is_isomeric(rt['smiles.std'].iloc[0]):
@@ -47,10 +50,9 @@ def access_data(pattern="", location=".*", training=True):
                 for col in column_string.columns:
                     query = rt[column[col].str.lower().str.contains(pattern.lower(), na=False)]
                     if not query.empty:
-                        df_merge = query.merge(alt.drop(columns=[col for col in query.columns[1:]] + ["0"]),
-                                               left_on="id", right_on="id",  how="left")
-                        results.append(df_merge)
-                        break
+                      df_merge = query.merge(alt.drop(columns=[col for col in query.columns[1:]] + ["0"]), left_on="id", right_on="id",  how="left")
+                      results.append(df_merge)
+                    break
         if column is not None and column.size == 0:
             print(f"{location} not found")
         elif results:
