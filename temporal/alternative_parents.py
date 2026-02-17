@@ -40,8 +40,8 @@ def alternative_parents():
                     df_at = (pd.DataFrame(lines)).transpose()
                     df_list.append(pd.merge(df_query, df_at, right_on=0, left_on="inchikey.std"))
             df = pd.concat(df_list, ignore_index=True)
-            df.to_csv("../RepoRT_classified.tsv", sep="\t", index=False)
-            print("Alternative Parents Proccess finished")
+            df.to_csv("../RepoRT_classified_testOriginal.tsv", sep="\t", index=False)
+            print("Alternative Parents Process finished")
             return df
 
     except Exception as e:
