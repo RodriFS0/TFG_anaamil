@@ -3,20 +3,22 @@ import re
 from glob import glob
 from pathlib import Path
 from itertools import islice
+from temporal.Update_RepoRT import ensure_processed_data_updated
 
 
-def alternative_parents(
+def optimiced_alternative_parents(
     classified_path="sampled_classified.tsv",
     out_path="../RepoRT_classified_testOptimiced.tsv",
     lines_per_block=1000,
     encoding="utf-8"
 ):
     try:
-        directory = glob("../data/*/*.tsv")
+        processed_path = ensure_processed_data_updated()
+        directory = list(processed_path.glob("*/*.tsv"))
         results = []
 
         for files in directory:
-            if re.search(r"_rtdata_canonical_success.tsv", files):
+            if re.search(r"_rtdata_canonical_success.tsv", str(files)):
                 df_rt = pd.read_csv(files, sep="\t", header=0, encoding=encoding)
                 results.append(df_rt)
 
@@ -155,4 +157,4 @@ def fix_header_extend(path, encoding="utf-8"):
 
 
 if __name__ == "__main__":
-    alternative_parents()
+    optimiced_alternative_parents()
