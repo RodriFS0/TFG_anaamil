@@ -44,7 +44,6 @@ def optimiced_alternative_parents(
         total_rows = 0
 
         with open(classified_path, "r", encoding=encoding, errors="replace") as f:
-
             block_number = 0
 
             while True:
@@ -71,9 +70,7 @@ def optimiced_alternative_parents(
                     df_query.loc[:, "inchikey.std"] = key
 
                     df_at = pd.DataFrame(lines).transpose()  # EXACTAMENTE igual
-                    merged = pd.merge(df_query, df_at,
-                                      right_on=0,
-                                      left_on="inchikey.std")
+                    merged = pd.merge(df_query, df_at, right_on=0, left_on="inchikey.std")
 
                     df_list_block.append(merged)
 
@@ -97,10 +94,12 @@ def optimiced_alternative_parents(
             return None
 
         print("Alternative Parents Proccess finished")
-        fix_header_extend(out_path)
+        fix_header_extend(out_path, encoding=encoding)
         print("Total filas escritas:", total_rows)
         print("Guardado en:", out_path.resolve())
-        return True
+
+
+        return out_path.resolve()
 
     except Exception as e:
         print(f"Error: {e}")
