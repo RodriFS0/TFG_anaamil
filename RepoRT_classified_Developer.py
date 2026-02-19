@@ -1,45 +1,15 @@
 import argparse
 import shutil
 from pathlib import Path
-import tkinter as tk
-from tkinter import filedialog
 from temporal.Optimiced_Alternative_Parents import optimiced_alternative_parents
 
-def RepoRT_classified_Developer(classified_path, lines_per_block):
+def RepoRT_classified_Developer(classified_path, lines_per_block, output_file="repoRT_joint.tsv"):
     final_file = optimiced_alternative_parents(
         classified_path=classified_path,
-        lines_per_block=lines_per_block
+        lines_per_block=lines_per_block, 
+        out_path=output_file
     )
 
-    if final_file:
-        save_file_as(final_file)
-
-
-def save_file_as(source_path):
-    source_path = Path(source_path)
-
-    if not source_path.exists():
-        raise FileNotFoundError(f"File not found: {source_path}")
-
-    root = tk.Tk()
-    root.withdraw()
-
-    destination = filedialog.asksaveasfilename(
-        title="Save RepoRT file as...",
-        defaultextension=".tsv",
-        initialfile=source_path.name,
-        filetypes=[("TSV files", "*.tsv"), ("All files", "*.*")]
-    )
-
-    if not destination:
-        print("Save cancelled.")
-        return None
-
-    destination_path = Path(destination)
-    shutil.copy2(source_path, destination_path)
-
-    print(f"File saved to: {destination_path}")
-    return destination_path
 
 
 if __name__ == "__main__":
@@ -64,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--blocksize",
         type=int,
-        default=1000,
+        default=6000000,
         help="Number of lines per processing block"
     )
 
