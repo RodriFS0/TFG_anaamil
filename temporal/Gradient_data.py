@@ -56,7 +56,7 @@ def gradient_data(training):
         DataFrame: A DataFrame containing processed gradient data merged with chromatographic column metadata
     """
     try:
-        directory = glob("data/*/*.tsv")
+        directory = glob("external/RepoRT/processed_data/*/*.tsv")
         excluded_files = []
         list_gra = []
         drop_file = []
@@ -154,7 +154,7 @@ def metadata():
               This DataFrame excludes unit-related columns and columns related to gradient data
     """
     try:
-        directory = glob("data/*/*.tsv")
+        directory = glob("external/RepoRT/processed_data/*/*.tsv")
         metadata_list = []
         for file in directory:
             if re.search(r"_metadata.tsv", file):

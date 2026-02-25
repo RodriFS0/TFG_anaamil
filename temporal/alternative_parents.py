@@ -18,7 +18,7 @@ def alternative_parents():
         DataFrame: DataFrame containing the matched records.
     """
     try:
-        directory = glob("../data/*/*.tsv")
+        directory = glob("../external/RepoRT/processed_data/*/*.tsv")
         results = []
         df_list = []
         for files in directory:

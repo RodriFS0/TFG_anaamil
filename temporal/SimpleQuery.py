@@ -6,7 +6,7 @@ def is_isomeric(smiles):
 
 def acceso_data(molecula):
     try:
-        archivos_directorio = glob('RepoRT/processed_data/*/*_success.tsv')
+        archivos_directorio = glob('external/RepoRT/processed_data/*/*_success.tsv')
         resultado=[]
         for file in archivos_directorio:
             df = pd.read_csv(file, sep='\t', header=0, encoding='utf-8')

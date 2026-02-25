@@ -23,7 +23,7 @@ def access_data(pattern="", location=".*", training=True):
     """
     Accesses RepoRT data based on a specified molecule pattern and column.
 
-    This function searches for files in the '../data/*/' directory containing molecule and retention time data.
+    This function searches for files in the '../external/RepoRT/processed_data/*/' directory containing molecule and retention time data.
     It reads the data from these files, filters it based on the provided molecule pattern and column location,
     and merges it with an alternative parents dataset.
 
@@ -37,7 +37,7 @@ def access_data(pattern="", location=".*", training=True):
         DataFrame: Processed DataFrame containing the merged data with its chromatographic information.
     """
     try:
-        directory = glob("data/*/*.tsv")
+        directory = glob("../external/RepoRT/processed_data/*/*.tsv")
         results = []
         column = None
         #alt = pd.read_csv('RepoRT_classified.tsv', sep='\t', header=0, encoding='utf-8', dtype=object)

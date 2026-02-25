@@ -13,7 +13,7 @@ def optimiced_alternative_parents(
     encoding="utf-8"
 ):
     #processed_path = ensure_processed_data_updated()
-    processed_path=Path("external/RepoRT_remote/processed_data")
+    processed_path=Path("external/RepoRT/processed_data/processed_data")
     directory = list(processed_path.glob("*/*.tsv"))
     results = []
 
