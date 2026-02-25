@@ -8,103 +8,110 @@ from temporal.Update_RepoRT import ensure_processed_data_updated
 
 def optimiced_alternative_parents(
     classified_path="sampled_classified.tsv",
-    out_path="../RepoRT_classified_testOptimiced.tsv",
+    out_path="RepoRT_classified_testOptimiced.tsv",
     lines_per_block=1000,
     encoding="utf-8"
 ):
-    try:
-        processed_path = ensure_processed_data_updated()
-        directory = list(processed_path.glob("*/*.tsv"))
-        results = []
+    #processed_path = ensure_processed_data_updated()
+    processed_path=Path("external/RepoRT_remote/processed_data")
+    directory = list(processed_path.glob("*/*.tsv"))
+    results = []
 
-        for files in directory:
-            if re.search(r"_rtdata_canonical_success.tsv", str(files)):
-                df_rt = pd.read_csv(files, sep="\t", header=0, encoding=encoding)
-                results.append(df_rt)
+    for files in directory:
+        if re.search(r"_rtdata_canonical_success.tsv", str(files)):
+            df_rt = pd.read_csv(files, sep="\t", header=0, encoding=encoding)
+            df_rt['study'] = Path(files).stem.split('_')[0]  # Add study column
+            # Load gradient
+            gradient_path = files.parent / f"{df_rt['study'].iloc[0]}_gradient.tsv"
+            if gradient_path.exists():
+                df_grad = pd.read_csv(gradient_path, sep="\t", header=0, encoding=encoding)
+                # Convert to string
+                grad_str = df_grad.to_csv(sep="\t", index=False)
+                df_rt['gradient'] = grad_str
+            else:
+                df_rt['gradient'] = ""
+            results.append(df_rt)
 
-        print("TSVs encontrados por glob:", len(directory))
-        print("TSVs que matchean el patrón:", len(results))
+    print("TSVs encontrados por glob:", len(directory))
+    print("TSVs que matchean el patrón:", len(results))
 
-        if not results:
-            return None
-
-        df_concat = pd.concat(results, axis=0, ignore_index=True)
-
-        inchikey_series = df_concat["inchikey.std"].astype(str).fillna("")
-
-        classified_path = Path(classified_path)
-        if not classified_path.exists():
-            raise FileNotFoundError(f"No encuentro {classified_path.resolve()}")
-
-        out_path = Path(out_path)
-        if out_path.exists():
-            out_path.unlink()
-
-        wrote_header = False
-        total_rows = 0
-
-        with open(classified_path, "r", encoding=encoding, errors="replace") as f:
-            block_number = 0
-
-            while True:
-                block_lines = list(islice(f, lines_per_block))
-                if not block_lines:
-                    break
-
-                block_number += 1
-                df_list_block = []
-
-                for line in block_lines:
-                    line = line.rstrip("\n")
-                    if not line:
-                        continue
-
-                    lines = line.split("\t")  # EXACTAMENTE igual que el original
-                    key = lines[0]
-
-                    mask = inchikey_series.str.contains(key)  # EXACTAMENTE igual
-                    if not mask.any():
-                        continue
-
-                    df_query = df_concat.loc[mask].copy()
-                    df_query.loc[:, "inchikey.std"] = key
-
-                    df_at = pd.DataFrame(lines).transpose()  # EXACTAMENTE igual
-                    merged = pd.merge(df_query, df_at, right_on=0, left_on="inchikey.std")
-
-                    df_list_block.append(merged)
-
-                if df_list_block:
-                    df_block = pd.concat(df_list_block, ignore_index=True)
-
-                    df_block.to_csv(
-                        out_path,
-                        sep="\t",
-                        index=False,
-                        mode="a",
-                        header=(not wrote_header)
-                    )
-                    wrote_header = True
-                    total_rows += len(df_block)
-
-                print(f"Bloque {block_number} procesado")
-
-        if not wrote_header:
-            print("No hubo matches.")
-            return None
-
-        print("Alternative Parents Proccess finished")
-        fix_header_extend(out_path, encoding=encoding)
-        print("Total filas escritas:", total_rows)
-        print("Guardado en:", out_path.resolve())
-
-
-        return out_path.resolve()
-
-    except Exception as e:
-        print(f"Error: {e}")
+    if not results:
         return None
 
+    df_concat = pd.concat(results, axis=0, ignore_index=True)
+
+    inchikey_series = df_concat["inchikey.std"].astype(str).str.strip()
+
+    classified_path = Path(classified_path)
+    if not classified_path.exists():
+        raise FileNotFoundError(f"No encuentro {classified_path.resolve()}")
+
+    out_path = Path(out_path)
+    if out_path.exists():
+        out_path.unlink()
+
+    wrote_header = False
+    total_rows = 0
+
+    with open(classified_path, "r", encoding=encoding, errors="replace") as f:
+        block_number = 0
+
+        while True:
+            block_lines = list(islice(f, lines_per_block))
+            if not block_lines:
+                break
+
+            block_number += 1
+            df_list_block = []
+
+            for line in block_lines:
+                line = line.rstrip("\n")
+                if not line:
+                    continue
+
+                lines = line.split("\t")  # EXACTAMENTE igual que el original
+                key = lines[0].strip()
+
+                mask = inchikey_series == key  # Changed to exact match
+                if not mask.any():
+                    continue
+
+                df_query = df_concat.loc[mask].copy()
+                df_query.loc[:, "inchikey.std"] = key
+
+                df_at = pd.DataFrame(lines).transpose()  # EXACTAMENTE igual
+                merged = pd.merge(df_query, df_at, right_on=0, left_on="inchikey.std")
+
+                df_list_block.append(merged)
+
+            if df_list_block:
+                df_block = pd.concat(df_list_block, ignore_index=True)
+
+                df_block.to_csv(
+                    out_path,
+                    sep="\t",
+                    index=False,
+                    mode="a",
+                    header=(not wrote_header)
+                )
+                wrote_header = True
+                total_rows += len(df_block)
+
+            print(f"Bloque {block_number} procesado")
+
+    if not wrote_header:
+        print("No hubo matches.")
+        return None
+
+    print("Alternative Parents Proccess finished")
+    fix_header_extend(out_path, encoding=encoding)
+    print("Total filas escritas:", total_rows)
+    print("Guardado en:", out_path.resolve())
+
+
+    return out_path.resolve()
+
+    
 from pathlib import Path
 
 def fix_header_extend(path, encoding="utf-8"):
